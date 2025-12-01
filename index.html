@@ -737,6 +737,38 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        
+        /* Estilos para fecha/hora Argentina */
+        .time-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: #f0f9ff;
+            color: var(--info-color);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #bae6fd;
+            white-space: nowrap;
+        }
+        
+        .created-date {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        
+        .date-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .date-input:valid {
+            border-color: var(--success-color);
+        }
+        
+        .date-input:invalid:not(:placeholder-shown) {
+            border-color: var(--danger-color);
+        }
     </style>
 </head>
 <body>
@@ -795,6 +827,7 @@
                         <th>Fecha de Remisión</th>
                         <th>Fecha de Respuesta</th>
                         <th>Estado</th>
+                        <th>Registrado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -833,22 +866,35 @@
                     <div class="form-container">
                         <div class="form-left">
                             <div class="form-group">
-                                <label for="recipient" class="form-label">Destinatario</label>
+                                <label for="recipient" class="form-label">Destinatario *</label>
                                 <input type="text" id="recipient" class="form-input" required>
                             </div>
                             <div class="form-group">
-                                <label for="remissionDate" class="form-label">Fecha de Remisión</label>
-                                <input type="date" id="remissionDate" class="form-input" required>
+                                <label for="remissionDate" class="form-label">Fecha de Remisión *</label>
+                                <input type="text" id="remissionDate" class="form-input date-input" 
+                                       pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}"
+                                       placeholder="DD/MM/AAAA"
+                                       required
+                                       title="Formato: DD/MM/AAAA (Día: 01-31, Mes: 01-12, Año: 4 dígitos)">
+                                <small class="created-date">Formato: DD/MM/AAAA (ej: 15/03/2024)</small>
                             </div>
                             <div class="form-group">
                                 <label for="responseDate" class="form-label">Fecha de Respuesta</label>
-                                <input type="date" id="responseDate" class="form-input">
+                                <input type="text" id="responseDate" class="form-input date-input" 
+                                       pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}"
+                                       placeholder="DD/MM/AAAA"
+                                       title="Formato: DD/MM/AAAA (Día: 01-31, Mes: 01-12, Año: 4 dígitos)">
+                                <small class="created-date">Formato: DD/MM/AAAA (ej: 20/03/2024)</small>
+                            </div>
+                            <div class="form-group" id="createdAtContainer" style="display: none;">
+                                <label class="form-label">Registrado el</label>
+                                <div class="form-input" style="background-color: #f8fafc;" id="createdAtDisplay"></div>
                             </div>
                         </div>
                         
                         <div class="form-right">
                             <div class="form-group">
-                                <label for="content" class="form-label">Contenido del Oficio</label>
+                                <label for="content" class="form-label">Contenido del Oficio *</label>
                                 <textarea id="content" class="form-input" placeholder="Escriba el contenido del oficio aquí..." rows="10" required></textarea>
                             </div>
                         </div>
@@ -870,10 +916,11 @@
         <div class="modal-content">
             <button class="close-btn">&times;</button>
             <div class="modal-header">
-                <h2 class="modal-title">Contenido del Oficio #<span id="contentNumber"></span></h2>
+                <h2 class="modal-title">Oficio #<span id="contentNumber"></span></h2>
                 <p><strong>Destinatario:</strong> <span id="contentRecipient"></span></p>
                 <p><strong>Fecha de Remisión:</strong> <span id="contentRemissionDate"></span></p>
                 <p><strong>Fecha de Respuesta:</strong> <span id="contentResponseDate"></span></p>
+                <p><strong>Registrado el:</strong> <span id="contentCreatedAt" class="time-badge"></span></p>
             </div>
             <div class="modal-body">
                 <div class="content-box">
@@ -928,6 +975,116 @@
             };
         }
 
+        // Función para obtener la fecha y hora actual en Argentina (UTC-3) como Timestamp
+        function getCurrentTimestampArgentina() {
+            // Usamos Timestamp de Firestore que siempre está en UTC
+            return firebase.firestore.Timestamp.now();
+        }
+
+        // Función para formatear fecha/hora EN ARGENTINA (UTC-3) SIN EXCEPCIONES
+        function formatDateTimeArgentina(dateInput) {
+            if (!dateInput) return 'No disponible';
+            
+            let date;
+            
+            // Si es un Timestamp de Firestore
+            if (dateInput.toDate && typeof dateInput.toDate === 'function') {
+                date = dateInput.toDate();
+            } 
+            // Si es un objeto Date
+            else if (dateInput instanceof Date) {
+                date = dateInput;
+            } 
+            // Si es un string ISO
+            else if (typeof dateInput === 'string') {
+                date = new Date(dateInput);
+            } 
+            // Si es un número (timestamp)
+            else if (typeof dateInput === 'number') {
+                date = new Date(dateInput);
+            } else {
+                return 'No disponible';
+            }
+            
+            // FORZAR zona horaria de Argentina (UTC-3) SIEMPRE
+            const argentinaTime = date.toLocaleString('es-AR', {
+                timeZone: 'America/Argentina/Buenos_Aires',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            return argentinaTime;
+        }
+
+        // Función para convertir de DD/MM/AAAA a YYYY-MM-DD (para almacenar)
+        function formatDateForStorage(dateString) {
+            if (!dateString) return '';
+            
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                
+                return `${year}-${month}-${day}`;
+            }
+            return dateString;
+        }
+
+        // Función para convertir de YYYY-MM-DD a DD/MM/AAAA (para mostrar)
+        function formatDateForDisplay(dateString) {
+            if (!dateString) return '';
+            
+            if (dateString.includes('-')) {
+                const parts = dateString.split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+            } else if (dateString.includes('/')) {
+                return dateString;
+            }
+            return dateString;
+        }
+
+        // Función para validar fecha en formato DD/MM/AAAA
+        function isValidDate(dateString) {
+            const pattern = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+            if (!pattern.test(dateString)) return false;
+            
+            const parts = dateString.split('/');
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            
+            if (year < 1900 || year > 2100) return false;
+            
+            const date = new Date(year, month - 1, day);
+            return date.getFullYear() === year && 
+                   date.getMonth() === month - 1 && 
+                   date.getDate() === day;
+        }
+
+        // Función para obtener el año de una fecha DD/MM/AAAA
+        function getYearFromDate(dateString) {
+            if (!dateString) return new Date().getFullYear().toString();
+            
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+                return parts[2];
+            }
+            
+            if (dateString.includes('-')) {
+                return dateString.split('-')[0];
+            }
+            
+            return new Date().getFullYear().toString();
+        }
+
         // Función para mostrar notificaciones
         function showNotification(message, type = "info") {
             const notification = document.createElement("div");
@@ -970,6 +1127,12 @@
             const saveBtnSpinner = document.getElementById('saveBtnSpinner');
             const connectionStatus = document.getElementById('connectionStatus');
             const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // Elementos del formulario con formato DD/MM/AAAA
+            const remissionDateInput = document.getElementById('remissionDate');
+            const responseDateInput = document.getElementById('responseDate');
+            const createdAtContainer = document.getElementById('createdAtContainer');
+            const createdAtDisplay = document.getElementById('createdAtDisplay');
             
             // Variables de estado
             let records = [];
@@ -1028,7 +1191,8 @@
                                 recipient: data.recipient || '',
                                 remissionDate: data.remissionDate || '',
                                 responseDate: data.responseDate || null,
-                                content: data.content || ''
+                                content: data.content || '',
+                                createdAt: data.createdAt || null
                             });
                         });
                         
@@ -1088,6 +1252,24 @@
                 prevPageBtn.addEventListener('click', goToPrevPage);
                 nextPageBtn.addEventListener('click', goToNextPage);
                 
+                // Event listeners para fechas con formato DD/MM/AAAA
+                remissionDateInput.addEventListener('input', function(e) {
+                    applyDateMask(e.target);
+                });
+                
+                responseDateInput.addEventListener('input', function(e) {
+                    applyDateMask(e.target);
+                });
+                
+                // Validar fechas al perder el foco
+                remissionDateInput.addEventListener('blur', function(e) {
+                    validateDateField(e.target);
+                });
+                
+                responseDateInput.addEventListener('blur', function(e) {
+                    validateDateField(e.target);
+                });
+                
                 closeButtons.forEach(button => {
                     button.addEventListener('click', function() {
                         recordModal.style.display = 'none';
@@ -1104,6 +1286,41 @@
                         contentModal.style.display = 'none';
                     }
                 });
+            }
+            
+            // Aplicar máscara para fecha DD/MM/AAAA
+            function applyDateMask(input) {
+                let value = input.value.replace(/\D/g, '');
+                
+                if (value.length > 8) {
+                    value = value.slice(0, 8);
+                }
+                
+                if (value.length >= 2) {
+                    value = value.slice(0, 2) + '/' + value.slice(2);
+                }
+                if (value.length >= 5) {
+                    value = value.slice(0, 5) + '/' + value.slice(5);
+                }
+                
+                input.value = value;
+                
+                if (value.length === 10 && isValidDate(value)) {
+                    input.style.borderColor = 'var(--success-color)';
+                } else if (value.length > 0) {
+                    input.style.borderColor = 'var(--danger-color)';
+                } else {
+                    input.style.borderColor = 'var(--border-color)';
+                }
+            }
+            
+            // Validar campo de fecha
+            function validateDateField(input) {
+                if (input.value && !isValidDate(input.value)) {
+                    input.style.borderColor = 'var(--danger-color)';
+                    return false;
+                }
+                return true;
             }
             
             // Actualizar filtro de años
@@ -1134,12 +1351,6 @@
                     option.textContent = year;
                     yearFilter.appendChild(option);
                 });
-            }
-            
-            // Obtener el año de una fecha
-            function getYearFromDate(dateString) {
-                if (!dateString) return currentYear.toString();
-                return new Date(dateString).getFullYear().toString();
             }
             
             // Obtener el siguiente número de oficio para un año específico
@@ -1186,7 +1397,7 @@
                 completedRecords.textContent = completed;
             }
             
-            // Renderizar la tabla de registros
+            // Renderizar la tabla de registros - CON HORA ARGENTINA SIEMPRE
             function renderTable() {
                 recordsBody.innerHTML = '';
                 
@@ -1214,16 +1425,25 @@
                 paginatedRecords.forEach(record => {
                     const row = document.createElement('tr');
                     
+                    // OBTENER FECHA/HORA DE REGISTRO EN ARGENTINA SIEMPRE
+                    let registroDisplay = 'No disponible';
+                    if (record.createdAt) {
+                        registroDisplay = formatDateTimeArgentina(record.createdAt);
+                    }
+                    
                     row.innerHTML = `
                         <td>${record.number}</td>
                         <td><span class="year-badge">${record.year}</span></td>
                         <td>${record.recipient}</td>
-                        <td>${formatDate(record.remissionDate)}</td>
-                        <td>${record.responseDate ? formatDate(record.responseDate) : '--'}</td>
+                        <td>${formatDateForDisplay(record.remissionDate)}</td>
+                        <td>${record.responseDate ? formatDateForDisplay(record.responseDate) : '--'}</td>
                         <td>
                             <span class="status-badge ${record.responseDate ? 'status-completed' : 'status-pending'}">
                                 ${record.responseDate ? 'Completado' : 'Pendiente'}
                             </span>
+                        </td>
+                        <td>
+                            <span class="time-badge">${registroDisplay}</span>
                         </td>
                         <td>
                             <div class="action-buttons">
@@ -1290,9 +1510,19 @@
                 document.getElementById('modalTitle').textContent = 'Nuevo Oficio';
                 recordForm.reset();
                 
-                // Establecer fecha actual por defecto
+                // Establecer fecha actual por defecto en formato DD/MM/AAAA
                 const today = new Date();
-                document.getElementById('remissionDate').valueAsDate = today;
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const year = today.getFullYear();
+                remissionDateInput.value = `${day}/${month}/${year}`;
+                remissionDateInput.style.borderColor = 'var(--success-color)';
+                
+                // Limpiar campo de respuesta
+                responseDateInput.value = '';
+                responseDateInput.style.borderColor = 'var(--border-color)';
+                
+                createdAtContainer.style.display = 'none';
                 
                 recordModal.style.display = 'flex';
             }
@@ -1302,9 +1532,22 @@
                 recordModal.style.display = 'none';
             }
             
-            // Guardar registro (nuevo o editado)
+            // Guardar registro (nuevo o editado) - CON TIMESTAMP UTC SIEMPRE
             async function saveRecord(e) {
                 e.preventDefault();
+                
+                // Validar fechas
+                if (!validateDateField(remissionDateInput)) {
+                    showNotification("Por favor, ingrese una fecha de remisión válida en formato DD/MM/AAAA", "error");
+                    remissionDateInput.focus();
+                    return;
+                }
+                
+                if (responseDateInput.value && !validateDateField(responseDateInput)) {
+                    showNotification("Por favor, ingrese una fecha de respuesta válida en formato DD/MM/AAAA", "error");
+                    responseDateInput.focus();
+                    return;
+                }
                 
                 // Mostrar spinner de carga
                 saveBtnText.style.display = 'none';
@@ -1312,13 +1555,13 @@
                 saveBtn.disabled = true;
                 
                 const recipient = document.getElementById('recipient').value;
-                const remissionDate = document.getElementById('remissionDate').value;
-                const responseDate = document.getElementById('responseDate').value;
+                const remissionDate = remissionDateInput.value;
+                const responseDate = responseDateInput.value || null;
                 const content = document.getElementById('content').value;
                 
                 // Validaciones básicas
-                if (!recipient || !remissionDate) {
-                    showNotification("Por favor, complete los campos obligatorios", "error");
+                if (!recipient || !remissionDate || !content) {
+                    showNotification("Por favor, complete los campos obligatorios (*)", "error");
                     saveBtnText.style.display = 'inline-block';
                     saveBtnSpinner.style.display = 'none';
                     saveBtn.disabled = false;
@@ -1330,17 +1573,18 @@
                 
                 try {
                     if (editingId === null) {
-                        // Nuevo registro
+                        // Nuevo registro - CON TIMESTAMP UTC
                         const nextNumber = await getNextNumberForYear(year);
+                        const createdAt = getCurrentTimestampArgentina();
                         
                         const newRecord = {
                             number: nextNumber,
                             year: year,
                             recipient,
-                            remissionDate,
-                            responseDate: responseDate || null,
+                            remissionDate: formatDateForStorage(remissionDate),
+                            responseDate: responseDate ? formatDateForStorage(responseDate) : null,
                             content,
-                            createdAt: firebaseInitialized ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+                            createdAt: createdAt // Timestamp UTC
                         };
                         
                         if (firebaseInitialized) {
@@ -1363,8 +1607,8 @@
                                 const data = existingRecord.data();
                                 let updateData = {
                                     recipient,
-                                    remissionDate,
-                                    responseDate: responseDate || null,
+                                    remissionDate: formatDateForStorage(remissionDate),
+                                    responseDate: responseDate ? formatDateForStorage(responseDate) : null,
                                     content,
                                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                                 };
@@ -1387,8 +1631,8 @@
                                 const data = records[index];
                                 let updateData = {
                                     recipient,
-                                    remissionDate,
-                                    responseDate: responseDate || null,
+                                    remissionDate: formatDateForStorage(remissionDate),
+                                    responseDate: responseDate ? formatDateForStorage(responseDate) : null,
                                     content,
                                     updatedAt: new Date().toISOString()
                                 };
@@ -1432,15 +1676,22 @@
                 }
             }
             
-            // Ver contenido completo de un oficio
+            // Ver contenido completo de un oficio - CON HORA ARGENTINA SIEMPRE
             function viewContent(id) {
                 const record = records.find(record => record.id === id);
                 
                 if (record) {
                     document.getElementById('contentNumber').textContent = `${record.number}/${record.year}`;
                     document.getElementById('contentRecipient').textContent = record.recipient;
-                    document.getElementById('contentRemissionDate').textContent = formatDate(record.remissionDate);
-                    document.getElementById('contentResponseDate').textContent = record.responseDate ? formatDate(record.responseDate) : 'Pendiente';
+                    document.getElementById('contentRemissionDate').textContent = formatDateForDisplay(record.remissionDate);
+                    document.getElementById('contentResponseDate').textContent = record.responseDate ? formatDateForDisplay(record.responseDate) : 'Pendiente';
+                    
+                    // MOSTRAR HORA DE REGISTRO EN ARGENTINA SIEMPRE
+                    let registroDisplay = 'No disponible';
+                    if (record.createdAt) {
+                        registroDisplay = formatDateTimeArgentina(record.createdAt);
+                    }
+                    document.getElementById('contentCreatedAt').textContent = registroDisplay;
                     
                     // Corrección para mostrar saltos de línea y espaciado
                     const formattedContent = record.content ? record.content.replace(/\n/g, '<br>') : '';
@@ -1459,9 +1710,25 @@
                     document.getElementById('modalTitle').textContent = 'Editar Oficio';
                     document.getElementById('recordId').value = record.id;
                     document.getElementById('recipient').value = record.recipient;
-                    document.getElementById('remissionDate').value = record.remissionDate;
-                    document.getElementById('responseDate').value = record.responseDate || '';
+                    
+                    // Formatear fechas para mostrar en DD/MM/AAAA
+                    remissionDateInput.value = formatDateForDisplay(record.remissionDate);
+                    remissionDateInput.style.borderColor = 'var(--success-color)';
+                    
+                    responseDateInput.value = record.responseDate ? formatDateForDisplay(record.responseDate) : '';
+                    if (responseDateInput.value) {
+                        responseDateInput.style.borderColor = 'var(--success-color)';
+                    }
+                    
                     document.getElementById('content').value = record.content || '';
+                    
+                    if (record.createdAt) {
+                        createdAtContainer.style.display = 'block';
+                        // Mostrar hora de registro en Argentina siempre
+                        createdAtDisplay.textContent = formatDateTimeArgentina(record.createdAt);
+                    } else {
+                        createdAtContainer.style.display = 'none';
+                    }
                     
                     recordModal.style.display = 'flex';
                 }
@@ -1503,13 +1770,6 @@
                 filteredRecords = [];
                 currentPage = 1;
                 renderTable();
-            }
-            
-            // Formatear fecha para mostrar
-            function formatDate(dateString) {
-                if (!dateString) return '--';
-                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                return new Date(dateString).toLocaleDateString('es-ES', options);
             }
             
             // Inicializar la aplicación

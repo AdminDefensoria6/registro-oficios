@@ -1085,6 +1085,14 @@
         .disabled-group .firma-option label {
             color: var(--text-light);
         }
+        
+        /* Estilos para resaltar búsqueda */
+        .search-highlight {
+            background-color: yellow;
+            color: black;
+            font-weight: bold;
+            padding: 2px 0;
+        }
     </style>
 </head>
 <body>
@@ -1152,7 +1160,6 @@
                         <th>Fecha de Respuesta</th>
                         <th>Estado</th>
                         <th>Temática</th>
-                        <!-- COLUMNAS OCULTAS: Usuario Asignado, Firma Defensor, Firma Secretario/a, Expediente -->
                         <th>Texto</th>
                         <th>Registrado</th>
                         <th>Acciones</th>
@@ -1379,6 +1386,7 @@
             console.error("Error inicializando Firebase:", error);
             showNotification("Error de conexión con Firebase. La aplicación funcionará en modo local.", "error");
             
+            // Firebase simulado para modo local
             db = {
                 collection: () => ({
                     orderBy: () => ({
@@ -1389,7 +1397,14 @@
                         get: () => Promise.resolve({ exists: false }),
                         update: () => Promise.resolve()
                     }),
-                    add: () => Promise.resolve()
+                    add: () => Promise.resolve(),
+                    where: () => ({
+                        orderBy: () => ({
+                            limit: () => ({
+                                get: () => Promise.resolve({ empty: true, docs: [] })
+                            })
+                        })
+                    })
                 })
             };
         }
@@ -1399,7 +1414,7 @@
             return firebase.firestore.Timestamp.now();
         }
 
-        // Función para formatear fecha/hora EN ARGENTINA (UTC-3) SIN EXCEPCIONES
+        // Función para formatear fecha/hora EN ARGENTINA (UTC-3)
         function formatDateTimeArgentina(dateInput) {
             if (!dateInput) return 'No disponible';
             
@@ -1586,7 +1601,7 @@
                 }
             }
             
-            // Configurar listeners de Firestore - SOLO MUESTRA OFFLINE
+            // Configurar listeners de Firestore
             function setupFirestoreListeners() {
                 loadingOverlay.style.display = 'flex';
                 
@@ -1918,12 +1933,12 @@
                 noTextRecords.textContent = withoutText;
             }
             
-            // Renderizar la tabla de registros - CORREGIDO PARA FILTRO
+            // Renderizar la tabla de registros
             function renderTable() {
                 recordsBody.innerHTML = '';
                 
                 // Determinar qué registros mostrar
-                const searchText = searchInput.value.toLowerCase().trim();
+                const searchText = searchInput.value.trim();
                 const selectedYear = yearFilter.value;
                 const hasActiveFilter = searchText || selectedYear !== 'todos';
                 
@@ -1931,7 +1946,6 @@
                 
                 if (recordsToRender.length === 0) {
                     emptyState.style.display = 'block';
-                    // Actualizar paginación para 0 registros
                     updatePagination(0);
                     return;
                 }
@@ -1959,12 +1973,6 @@
                     }
                     
                     const hasText = record.content && record.content.trim() !== '';
-                    
-                    // NO mostramos los campos ocultos en la tabla:
-                    // - assignedUser
-                    // - firmaDefensor
-                    // - firmaSecretario
-                    // - expediente
                     
                     row.innerHTML = `
                         <td>${record.number}</td>
@@ -2036,7 +2044,7 @@
             
             // Ir a la página siguiente
             function goToNextPage() {
-                const searchText = searchInput.value.toLowerCase().trim();
+                const searchText = searchInput.value.trim();
                 const selectedYear = yearFilter.value;
                 const hasActiveFilter = searchText || selectedYear !== 'todos';
                 const recordsToRender = hasActiveFilter ? filteredRecords : records;
@@ -2274,7 +2282,7 @@
                 }
             }
             
-            // Ver contenido completo de un oficio - MUESTRA SOLO LA FIRMA SELECCIONADA
+            // Ver contenido completo de un oficio
             function viewContent(id) {
                 const record = records.find(record => record.id === id);
                 
@@ -2412,37 +2420,48 @@
                 }
             }
             
-            // Filtrar registros - BUSCA EN TODOS LOS CAMPOS INCLUYENDO LOS OCULTOS
+            // Filtrar registros - SISTEMA DE BÚSQUEDA MEJORADO
             function filterRecords() {
-                const searchText = searchInput.value.toLowerCase().trim();
+                const searchText = searchInput.value.trim();
                 const selectedYear = yearFilter.value;
                 
-                // SIEMPRE filtrar, incluso si el texto está vacío
+                // Determinar si la búsqueda es solo números (para búsqueda exacta en columna N°)
+                const isNumberOnly = /^\d+$/.test(searchText);
+                
                 filteredRecords = records.filter(record => {
+                    // Filtro por año
                     const yearMatch = selectedYear === 'todos' || record.year.toString() === selectedYear;
                     
                     if (!searchText) {
                         return yearMatch;
                     }
                     
-                    // Buscar por número (coincidencia exacta o parcial)
-                    const numberMatch = record.number.toString().includes(searchText);
+                    const searchLower = searchText.toLowerCase();
                     
-                    // Buscar en TODOS los campos, incluyendo los ocultos
+                    // BÚSQUEDA INTELIGENTE:
+                    // 1. Si es solo números, busca coincidencia exacta en la columna N°
+                    if (isNumberOnly) {
+                        const numberMatch = record.number.toString() === searchText;
+                        if (numberMatch) return yearMatch && true;
+                    }
+                    
+                    // 2. Busca en TODOS los campos (incluyendo los ocultos) de manera parcial
                     const textMatch = 
-                        (record.recipient && record.recipient.toLowerCase().includes(searchText)) ||
-                        (record.topic && record.topic.toLowerCase().includes(searchText)) ||
-                        (record.assignedUser && record.assignedUser.toLowerCase().includes(searchText)) ||
-                        (record.expediente && record.expediente.toLowerCase().includes(searchText)) ||
-                        (record.content && record.content.toLowerCase().includes(searchText)) ||
-                        (record.firmaDefensor && record.firmaDefensor.toLowerCase().includes(searchText)) ||
-                        (record.firmaDefensorSubrogante && record.firmaDefensorSubrogante.toLowerCase().includes(searchText)) ||
-                        (record.firmaSecretarioNombre && record.firmaSecretarioNombre.toLowerCase().includes(searchText)) ||
-                        (record.year && record.year.toString().includes(searchText)) ||
-                        (formatDateForDisplay(record.remissionDate) && formatDateForDisplay(record.remissionDate).toLowerCase().includes(searchText)) ||
-                        (record.responseDate && formatDateForDisplay(record.responseDate).toLowerCase().includes(searchText));
+                        (record.recipient && record.recipient.toLowerCase().includes(searchLower)) ||
+                        (record.topic && record.topic.toLowerCase().includes(searchLower)) ||
+                        (record.assignedUser && record.assignedUser.toLowerCase().includes(searchLower)) ||
+                        (record.expediente && record.expediente.toLowerCase().includes(searchLower)) ||
+                        (record.content && record.content.toLowerCase().includes(searchLower)) ||
+                        (record.firmaDefensor && record.firmaDefensor.toLowerCase().includes(searchLower)) ||
+                        (record.firmaDefensorSubrogante && record.firmaDefensorSubrogante.toLowerCase().includes(searchLower)) ||
+                        (record.firmaSecretarioNombre && record.firmaSecretarioNombre.toLowerCase().includes(searchLower)) ||
+                        (record.year && record.year.toString().toLowerCase().includes(searchLower)) ||
+                        (formatDateForDisplay(record.remissionDate) && formatDateForDisplay(record.remissionDate).toLowerCase().includes(searchLower)) ||
+                        (record.responseDate && formatDateForDisplay(record.responseDate).toLowerCase().includes(searchLower)) ||
+                        // También buscar en el número como texto parcial (si no es búsqueda exacta)
+                        (!isNumberOnly && record.number.toString().toLowerCase().includes(searchLower));
                     
-                    return yearMatch && (numberMatch || textMatch);
+                    return yearMatch && textMatch;
                 });
                 
                 currentPage = 1;

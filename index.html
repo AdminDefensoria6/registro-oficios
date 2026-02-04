@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Oficios</title>
+    <title>Oficios</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -40,22 +40,22 @@
             background-color: #f1f5f9;
             color: var(--text-color);
             line-height: 1.6;
-            padding: 20px;
+            padding: 10px;
         }
         
         .container {
             width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
         
         header {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 1.5rem;
+            padding: 1.2rem 1rem;
             border-radius: var(--radius);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
@@ -64,48 +64,97 @@
         
         .header-content {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 15px;
             width: 100%;
         }
         
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
+            text-align: center;
         }
         
+        /* ESTILOS IDÉNTICOS A DICTAMEN PARA KPIs TRIMESTRALES */
         .stats {
-            display: flex;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
             background: rgba(255, 255, 255, 0.15);
-            padding: 10px 15px;
+            padding: 10px;
             border-radius: var(--radius-sm);
             backdrop-filter: blur(10px);
-            flex-wrap: wrap;
         }
         
         .stat-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 80px;
+            justify-content: center;
+            padding: 6px 0;
         }
         
         .stat-value {
             font-size: 1.2rem;
             font-weight: 700;
+            line-height: 1.2;
         }
         
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             opacity: 0.9;
+            text-align: center;
+            margin-top: 2px;
+            line-height: 1.1;
+        }
+        
+        /* Estadísticas mensuales */
+        .monthly-stats {
+            display: none; /* Oculto por defecto, se mostrará si hay datos */
+            overflow-x: auto;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+        }
+        
+        .monthly-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 5px;
+            min-width: 800px;
+        }
+        
+        .month-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            min-width: 50px;
+        }
+        
+        .month-stat-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        
+        .month-stat-label {
+            font-size: 0.6rem;
+            opacity: 0.9;
+            text-align: center;
+            margin-top: 1px;
+            line-height: 1;
         }
         
         .controls-container {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             background: var(--white);
             padding: 15px;
             border-radius: var(--radius);
@@ -113,19 +162,29 @@
         }
         
         .search-container {
-            flex: 1;
             display: flex;
+            flex-direction: column;
             gap: 10px;
+            width: 100%;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
         }
         
-        .year-filter {
+        .year-filter, .month-filter {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
+            width: 100%;
         }
         
         .search-input {
-            flex: 1;
+            width: 100%;
             padding: 12px 16px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
@@ -140,6 +199,7 @@
         }
         
         select.form-input {
+            width: 100%;
             padding: 12px 16px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
@@ -157,7 +217,9 @@
             transition: var(--transition);
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            width: 100%;
         }
         
         .btn-primary {
@@ -189,36 +251,38 @@
             box-shadow: var(--shadow);
             margin-bottom: 20px;
             width: 100%;
-            max-width: 100%;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 100%;
-            table-layout: auto;
+            min-width: 900px;
         }
         
         th, td {
-            padding: 12px 8px;
+            padding: 10px 6px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 150px;
+            max-width: 120px;
+            font-size: 0.85rem;
         }
         
         th {
             background-color: #f8fafc;
             color: var(--text-light);
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             cursor: pointer;
             transition: var(--transition);
+            position: sticky;
+            top: 0;
         }
         
         th:hover {
@@ -244,21 +308,25 @@
         
         .action-buttons {
             display: flex;
+            flex-direction: column;
             gap: 6px;
+            min-width: 100px;
         }
         
         .action-btn {
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: var(--radius-sm);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition);
             border: none;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
             white-space: nowrap;
+            width: 100%;
         }
         
         .btn-view {
@@ -294,18 +362,18 @@
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(5px);
-            padding: 20px;
+            padding: 10px;
         }
         
         .modal-content {
             background-color: var(--white);
             border-radius: var(--radius);
             width: 100%;
-            max-width: 1200px;
-            max-height: 90vh;
+            max-width: 95%;
+            max-height: 95vh;
             overflow-y: auto;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-            padding: 24px;
+            padding: 20px;
             position: relative;
             animation: modalFadeIn 0.3s ease-out;
         }
@@ -323,8 +391,8 @@
         
         .close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             font-size: 24px;
             cursor: pointer;
             color: var(--text-light);
@@ -337,6 +405,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1001;
         }
         
         .close-btn:hover {
@@ -345,55 +414,49 @@
         }
         
         .modal-header {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid var(--border-color);
         }
         
         .modal-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 600;
             color: var(--primary-color);
+            margin-right: 30px;
         }
         
         .modal-body {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         /* Formulario dividido */
         .form-container {
             display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .form-left {
-            flex: 1;
-            min-width: 300px;
-        }
-        
-        .form-right {
-            flex: 1;
-            min-width: 300px;
-            display: flex;
             flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-left, .form-right {
+            width: 100%;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             position: relative;
         }
         
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 500;
             color: var(--text-color);
+            font-size: 0.9rem;
         }
         
         .form-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
             font-size: 16px;
@@ -407,7 +470,7 @@
         }
         
         textarea.form-input {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
         
@@ -438,7 +501,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
+            padding: 8px 12px;
             background-color: #f8fafc;
             border-bottom: 1px solid var(--border-color);
         }
@@ -450,21 +513,22 @@
         }
         
         .word-count {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-light);
         }
         
         .content-area {
             flex: 1;
-            padding: 15px;
-            min-height: 300px;
-            max-height: 400px;
+            padding: 12px;
+            min-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
             border: none;
             resize: none;
             width: 100%;
+            font-size: 16px;
         }
         
         .content-area:focus {
@@ -475,13 +539,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
+            padding: 8px 12px;
             background-color: #f8fafc;
             border-top: 1px solid var(--border-color);
         }
         
         .page-info {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-light);
         }
         
@@ -498,6 +562,9 @@
             cursor: pointer;
             font-size: 0.8rem;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .page-btn:hover:not(:disabled) {
@@ -513,253 +580,226 @@
         
         .form-actions {
             display: flex;
-            justify-content: flex-end;
+            flex-direction: column;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
-        /* Responsive */
-        @media (max-width: 1200px) {
+        /* Responsive mejorado para móviles */
+        @media (min-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
             .container {
                 padding: 15px;
             }
             
-            th, td {
-                padding: 10px 6px;
-                font-size: 0.85rem;
-                max-width: 130px;
-            }
-            
-            .action-btn {
-                padding: 5px 8px;
-                font-size: 0.75rem;
-            }
-            
-            .btn {
-                padding: 10px 15px;
-                font-size: 14px;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-
-            .stats {
-                width: 100%;
-                justify-content: space-around;
-            }
-
-            .controls-container {
-                flex-direction: column;
-            }
-
-            .search-container {
-                flex-direction: column;
-            }
-            
-            th, td {
-                padding: 8px 4px;
-                font-size: 0.8rem;
-                max-width: 100px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .action-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .table-container {
-                overflow-x: auto;
-            }
-            
-            table {
-                min-width: 800px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
             header {
-                padding: 1rem;
+                padding: 1.2rem;
             }
             
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.6rem;
             }
             
             .stats {
                 gap: 10px;
-                padding: 8px 10px;
+                padding: 12px;
+            }
+            
+            .stat-item {
+                padding: 8px 0;
             }
             
             .stat-value {
-                font-size: 1rem;
-            }
-            
-            .stat-label {
-                font-size: 0.7rem;
-            }
-            
-            .table-container {
-                overflow-x: auto;
-                border-radius: var(--radius-sm);
-            }
-            
-            table {
-                min-width: 700px;
-            }
-            
-            th, td {
-                padding: 6px 3px;
-                font-size: 0.7rem;
-                max-width: 90px;
-            }
-            
-            .action-btn {
-                padding: 4px 6px;
-                font-size: 0.7rem;
-            }
-            
-            .year-badge, .topic-badge, .time-badge, .text-badge, .user-badge, .firma-badge, .secretario-badge {
-                font-size: 0.65rem;
-                padding: 3px 6px;
-            }
-            
-            .modal-content {
-                max-width: 95%;
-                padding: 15px;
-            }
-            
-            .form-container {
-                flex-direction: column;
-            }
-            
-            .form-left, .form-right {
-                min-width: 100%;
-            }
-            
-            .content-area {
-                max-height: 300px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                padding: 5px;
-            }
-            
-            header {
-                padding: 0.8rem;
-            }
-            
-            h1 {
                 font-size: 1.3rem;
             }
             
-            .stats {
-                gap: 8px;
-                padding: 6px 8px;
-            }
-            
-            .stat-item {
-                min-width: 60px;
-            }
-            
-            .stat-value {
-                font-size: 0.9rem;
-            }
-            
             .stat-label {
-                font-size: 0.6rem;
+                font-size: 0.75rem;
             }
             
-            .controls-container {
-                padding: 10px;
+            .monthly-stats {
+                padding: 12px;
+            }
+            
+            .monthly-stats-grid {
+                gap: 8px;
+            }
+            
+            .month-stat-item {
+                padding: 5px 3px;
+                min-width: 55px;
+            }
+            
+            .month-stat-value {
+                font-size: 0.95rem;
+            }
+            
+            .month-stat-label {
+                font-size: 0.65rem;
             }
             
             .btn {
-                padding: 8px 12px;
-                font-size: 0.85rem;
+                width: auto;
+                min-width: 140px;
             }
             
-            .search-input {
-                padding: 10px 12px;
+            .search-container {
+                flex-direction: row;
+                align-items: center;
             }
             
-            table {
-                min-width: 600px;
+            .year-filter, .month-filter {
+                width: auto;
+                min-width: 120px;
             }
             
-            th, td {
-                padding: 5px 2px;
-                font-size: 0.65rem;
-                max-width: 80px;
+            .form-actions {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+            
+            .action-buttons {
+                flex-direction: row;
+                justify-content: center;
             }
             
             .action-btn {
-                padding: 3px 5px;
-                font-size: 0.65rem;
+                width: auto;
+                padding: 6px 12px;
             }
         }
 
-        @media (max-width: 400px) {
-            .stats {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                justify-content: flex-start;
+        @media (min-width: 768px) {
+            .container {
+                padding: 20px;
             }
             
-            .stat-item {
-                flex-shrink: 0;
+            .header-content {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            h1 {
+                text-align: left;
+                font-size: 1.8rem;
+            }
+            
+            .controls-container {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .search-container {
+                flex: 1;
+            }
+            
+            .year-filter, .month-filter {
+                width: 140px;
+            }
+            
+            .monthly-stats {
+                display: block;
+            }
+            
+            .monthly-stats-grid {
+                min-width: 1000px;
+            }
+            
+            .form-container {
+                flex-direction: row;
+            }
+            
+            .form-left, .form-right {
+                width: 50%;
+            }
+            
+            .modal-content {
+                max-width: 90%;
+                padding: 24px;
+            }
+            
+            .modal-title {
+                font-size: 1.5rem;
+            }
+            
+            .content-area {
+                max-height: 400px;
             }
         }
-        
+
+        @media (min-width: 992px) {
+            .header-content {
+                flex-direction: row;
+            }
+            
+            table {
+                min-width: 100%;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.9rem;
+                max-width: 150px;
+            }
+            
+            .action-buttons {
+                flex-direction: row;
+            }
+            
+            .action-btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .monthly-stats-grid {
+                min-width: 1200px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .modal-content {
+                max-width: 1200px;
+                padding: 24px;
+            }
+        }
+
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 15px;
             color: var(--text-light);
         }
         
         .empty-state i {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 15px;
             color: var(--border-color);
         }
         
         .empty-state p {
-            font-size: 1.1rem;
+            font-size: 1rem;
             margin-bottom: 20px;
         }
         
         .floating-btn {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            font-size: 20px;
             box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
             cursor: pointer;
             z-index: 100;
@@ -771,30 +811,13 @@
             box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
         }
         
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-        
-        .status-completed {
-            background-color: #d1fae5;
-            color: #059669;
-        }
-        
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .pagination-btn {
@@ -807,6 +830,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            min-width: 120px;
         }
         
         .pagination-btn:hover:not(:disabled) {
@@ -823,23 +847,25 @@
         .pagination-info {
             color: var(--text-light);
             font-size: 0.9rem;
+            text-align: center;
+            min-width: 120px;
         }
         
         .year-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
             background-color: #e0f2fe;
             color: var(--primary-color);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
         }
         
         .topic-badge {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             background-color: #e0e7ff;
             color: #3730a3;
@@ -847,9 +873,9 @@
         
         .text-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             background-color: #f0f9ff;
             color: var(--info-color);
@@ -870,14 +896,15 @@
         
         .time-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
             background-color: #f0f9ff;
             color: var(--info-color);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             border: 1px solid #bae6fd;
-            white-space: nowrap;
+            white-space: normal;
+            word-break: break-word;
         }
         
         .loading {
@@ -894,36 +921,12 @@
             to { transform: rotate(360deg); }
         }
         
-        .connection-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            display: none !important;
-        }
-        
-        .online {
-            background-color: var(--success-color);
-            color: white;
-        }
-        
-        .offline {
-            background-color: var(--danger-color);
-            color: white;
-        }
-        
         .notification {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 15px 20px;
+            padding: 12px 18px;
             border-radius: var(--radius-sm);
             background-color: var(--primary-color);
             color: white;
@@ -931,8 +934,10 @@
             z-index: 1100;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             animation: slideIn 0.3s ease-out;
+            max-width: 90%;
+            text-align: center;
         }
         
         @keyframes slideIn {
@@ -977,7 +982,7 @@
         }
         
         .created-date {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-light);
             margin-top: 5px;
         }
@@ -985,14 +990,15 @@
         /* Nuevos estilos para campos adicionales */
         .firma-options {
             display: flex;
-            gap: 15px;
+            flex-direction: column;
+            gap: 10px;
             margin-top: 5px;
         }
         
         .firma-option {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             cursor: pointer;
         }
         
@@ -1027,22 +1033,24 @@
         /* Usuario asignado */
         .user-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
             background-color: #f0f9ff;
             color: var(--primary-color);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             border: 1px solid #bae6fd;
+            word-break: break-word;
         }
         
         /* Firma defensor badge */
         .firma-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
+            word-break: break-word;
         }
         
         .firma-si {
@@ -1063,12 +1071,33 @@
             border: 1px solid #bae6fd;
         }
         
+        /* Status badges para oficios */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+        
+        .status-completed {
+            background-color: #d1fae5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        
         /* Secretario/a badge */
         .secretario-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             background-color: #f3e8ff;
             color: #7c3aed;
@@ -1093,6 +1122,142 @@
             font-weight: bold;
             padding: 2px 0;
         }
+        
+        /* Mejoras para móviles */
+        @media (max-width: 479px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+                padding: 8px;
+            }
+            
+            .stat-item:nth-child(1) {
+                grid-column: 1 / span 3;
+                margin-bottom: 5px;
+            }
+            
+            .stat-value {
+                font-size: 1.1rem;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+            }
+            
+            .pagination-btn {
+                min-width: 100px;
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .pagination-info {
+                min-width: 100px;
+                font-size: 0.85rem;
+            }
+            
+            .modal-content {
+                padding: 15px;
+            }
+            
+            .firma-options {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .content-area {
+                font-size: 16px;
+            }
+            
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stat-item:nth-child(1) {
+                grid-column: 1 / span 2;
+            }
+        }
+        
+        /* Scroll suave para móviles */
+        .table-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        .content-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .content-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .content-area::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .monthly-stats::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .monthly-stats::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .monthly-stats::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .monthly-stats::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Connection status */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            display: none !important;
+        }
+        
+        .online {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .offline {
+            background-color: var(--danger-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -1108,27 +1273,34 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <h1>Registro de Oficios</h1>
+                <h1>Oficios</h1>
                 <div class="stats">
                     <div class="stat-item">
                         <span class="stat-value" id="totalRecords">0</span>
                         <span class="stat-label">Total</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value" id="pendingRecords">0</span>
-                        <span class="stat-label">Pendientes</span>
+                        <span class="stat-value" id="trimestre1">0</span>
+                        <span class="stat-label">Ene-Mar</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value" id="completedRecords">0</span>
-                        <span class="stat-label">Completados</span>
+                        <span class="stat-value" id="trimestre2">0</span>
+                        <span class="stat-label">Abr-Jun</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value" id="textRecords">0</span>
-                        <span class="stat-label">Con Texto</span>
+                        <span class="stat-value" id="trimestre3">0</span>
+                        <span class="stat-label">Jul-Sep</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value" id="noTextRecords">0</span>
-                        <span class="stat-label">Sin Texto</span>
+                        <span class="stat-value" id="trimestre4">0</span>
+                        <span class="stat-label">Oct-Dic</span>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas mensuales -->
+                <div class="monthly-stats" id="monthlyStats">
+                    <div class="monthly-stats-grid" id="monthlyStatsGrid">
+                        <!-- Se llenará dinámicamente con JavaScript -->
                     </div>
                 </div>
             </div>
@@ -1136,12 +1308,32 @@
         
         <div class="controls-container">
             <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="Buscar por número o texto en todos los campos...">
-                <div class="year-filter">
-                    <label for="yearFilter" class="form-label">Año:</label>
-                    <select id="yearFilter" class="form-input">
-                        <option value="todos">Todos</option>
-                    </select>
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar por número, destinatario, expediente, contenido o cualquier campo...">
+                <div class="filter-row">
+                    <div class="year-filter">
+                        <label for="yearFilter" class="form-label">Año:</label>
+                        <select id="yearFilter" class="form-input">
+                            <option value="todos">Todos</option>
+                        </select>
+                    </div>
+                    <div class="month-filter">
+                        <label for="monthFilter" class="form-label">Mes:</label>
+                        <select id="monthFilter" class="form-input">
+                            <option value="todos">Todos</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <button id="newRecordBtn" class="btn btn-primary">
@@ -1509,6 +1701,29 @@
             return new Date().getFullYear().toString();
         }
 
+        // Función para obtener el mes de una fecha DD/MM/AAAA o YYYY-MM-DD
+        function getMonthFromDate(dateString) {
+            if (!dateString) return 0;
+            
+            let month = 0;
+            
+            if (dateString.includes('/')) {
+                // Formato DD/MM/AAAA
+                const parts = dateString.split('/');
+                if (parts.length === 3) {
+                    month = parseInt(parts[1], 10);
+                }
+            } else if (dateString.includes('-')) {
+                // Formato YYYY-MM-DD
+                const parts = dateString.split('-');
+                if (parts.length === 3) {
+                    month = parseInt(parts[1], 10);
+                }
+            }
+            
+            return month;
+        }
+
         // Función para mostrar notificaciones
         function showNotification(message, type = "info") {
             const notification = document.createElement("div");
@@ -1534,6 +1749,7 @@
             const recordForm = document.getElementById('recordForm');
             const searchInput = document.getElementById('searchInput');
             const yearFilter = document.getElementById('yearFilter');
+            const monthFilter = document.getElementById('monthFilter');
             const newRecordBtn = document.getElementById('newRecordBtn');
             const emptyStateBtn = document.getElementById('emptyStateBtn');
             const cancelBtn = document.getElementById('cancelBtn');
@@ -1543,15 +1759,17 @@
             const nextPageBtn = document.getElementById('nextPageBtn');
             const pageInfo = document.getElementById('pageInfo');
             const totalRecords = document.getElementById('totalRecords');
-            const pendingRecords = document.getElementById('pendingRecords');
-            const completedRecords = document.getElementById('completedRecords');
-            const textRecords = document.getElementById('textRecords');
-            const noTextRecords = document.getElementById('noTextRecords');
+            const trimestre1 = document.getElementById('trimestre1');
+            const trimestre2 = document.getElementById('trimestre2');
+            const trimestre3 = document.getElementById('trimestre3');
+            const trimestre4 = document.getElementById('trimestre4');
             const saveBtn = document.getElementById('saveBtn');
             const saveBtnText = document.getElementById('saveBtnText');
             const saveBtnSpinner = document.getElementById('saveBtnSpinner');
             const connectionStatus = document.getElementById('connectionStatus');
             const loadingOverlay = document.getElementById('loadingOverlay');
+            const monthlyStats = document.getElementById('monthlyStats');
+            const monthlyStatsGrid = document.getElementById('monthlyStatsGrid');
             
             // Elementos del formulario con campos nuevos
             const remissionDateInput = document.getElementById('remissionDate');
@@ -1583,12 +1801,15 @@
             let currentPage = 1;
             const recordsPerPage = 10;
             const currentYear = new Date().getFullYear();
-            const startYear = 2020;
+            const startYear = 2026;
             
             // Variables para paginación de contenido
             let contentPages = [];
             let currentContentPage = 1;
             const wordsPerPage = 5000;
+            
+            // Nombres de meses para mostrar
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             
             // Inicializar la aplicación
             function init() {
@@ -1656,6 +1877,8 @@
                         
                         updateYearFilter();
                         updateStats();
+                        updateTrimestreStats();
+                        updateMonthlyStats();
                         renderTable();
                         
                         loadingOverlay.style.display = 'none';
@@ -1685,6 +1908,8 @@
 
                         updateYearFilter();
                         updateStats();
+                        updateTrimestreStats();
+                        updateMonthlyStats();
                         renderTable();
                     } else {
                         emptyState.style.display = 'block';
@@ -1713,6 +1938,7 @@
                 recordForm.addEventListener('submit', saveRecord);
                 searchInput.addEventListener('input', filterRecords);
                 yearFilter.addEventListener('change', filterRecords);
+                monthFilter.addEventListener('change', filterRecords);
                 viewAllBtn.addEventListener('click', viewAllRecords);
                 prevPageBtn.addEventListener('click', goToPrevPage);
                 nextPageBtn.addEventListener('click', goToNextPage);
@@ -1934,19 +2160,86 @@
                 }
             }
             
-            // Actualizar estadísticas
+            // Actualizar estadísticas principales
             function updateStats() {
                 totalRecords.textContent = records.length;
+            }
+            
+            // Actualizar estadísticas por trimestre
+            function updateTrimestreStats() {
+                let trim1 = 0, trim2 = 0, trim3 = 0, trim4 = 0;
                 
-                const pending = records.filter(record => !record.responseDate).length;
-                const completed = records.filter(record => record.responseDate).length;
-                const withText = records.filter(record => record.content && record.content.trim() !== '').length;
-                const withoutText = records.length - withText;
+                // Obtener el año seleccionado en el filtro
+                const selectedYear = yearFilter.value;
                 
-                pendingRecords.textContent = pending;
-                completedRecords.textContent = completed;
-                textRecords.textContent = withText;
-                noTextRecords.textContent = withoutText;
+                // Filtrar registros por año si no es "todos"
+                let recordsToCheck = records;
+                if (selectedYear !== 'todos') {
+                    recordsToCheck = records.filter(record => record.year.toString() === selectedYear);
+                }
+                
+                // Contar por trimestre
+                recordsToCheck.forEach(record => {
+                    const month = getMonthFromDate(record.remissionDate);
+                    
+                    if (month >= 1 && month <= 3) {
+                        trim1++;
+                    } else if (month >= 4 && month <= 6) {
+                        trim2++;
+                    } else if (month >= 7 && month <= 9) {
+                        trim3++;
+                    } else if (month >= 10 && month <= 12) {
+                        trim4++;
+                    }
+                });
+                
+                // Actualizar los elementos HTML
+                trimestre1.textContent = trim1;
+                trimestre2.textContent = trim2;
+                trimestre3.textContent = trim3;
+                trimestre4.textContent = trim4;
+            }
+            
+            // Actualizar estadísticas mensuales
+            function updateMonthlyStats() {
+                monthlyStatsGrid.innerHTML = '';
+                
+                // Inicializar contadores para cada mes
+                const monthCounts = Array(12).fill(0);
+                
+                // Obtener el año seleccionado en el filtro
+                const selectedYear = yearFilter.value;
+                
+                // Filtrar registros por año si no es "todos"
+                let recordsToCheck = records;
+                if (selectedYear !== 'todos') {
+                    recordsToCheck = records.filter(record => record.year.toString() === selectedYear);
+                }
+                
+                // Contar por mes basado en la fecha de remisión
+                recordsToCheck.forEach(record => {
+                    const month = getMonthFromDate(record.remissionDate);
+                    if (month >= 1 && month <= 12) {
+                        monthCounts[month - 1]++;
+                    }
+                });
+                
+                // Crear elementos para cada mes
+                monthCounts.forEach((count, index) => {
+                    const monthStatItem = document.createElement('div');
+                    monthStatItem.className = 'month-stat-item';
+                    
+                    monthStatItem.innerHTML = `
+                        <span class="month-stat-value">${count}</span>
+                        <span class="month-stat-label">${monthNames[index]}</span>
+                    `;
+                    
+                    monthlyStatsGrid.appendChild(monthStatItem);
+                });
+                
+                // Mostrar u ocultar la sección de estadísticas mensuales
+                const hasData = monthCounts.some(count => count > 0);
+                monthlyStats.style.display = hasData ? 'block' : 'none';
             }
             
             // Renderizar la tabla de registros
@@ -1956,7 +2249,8 @@
                 // Determinar qué registros mostrar
                 const searchText = searchInput.value.trim();
                 const selectedYear = yearFilter.value;
-                const hasActiveFilter = searchText || selectedYear !== 'todos';
+                const selectedMonth = monthFilter.value;
+                const hasActiveFilter = searchText || selectedYear !== 'todos' || selectedMonth !== 'todos';
                 
                 const recordsToRender = hasActiveFilter ? filteredRecords : records;
                 
@@ -2062,7 +2356,8 @@
             function goToNextPage() {
                 const searchText = searchInput.value.trim();
                 const selectedYear = yearFilter.value;
-                const hasActiveFilter = searchText || selectedYear !== 'todos';
+                const selectedMonth = monthFilter.value;
+                const hasActiveFilter = searchText || selectedYear !== 'todos' || selectedMonth !== 'todos';
                 const recordsToRender = hasActiveFilter ? filteredRecords : records;
                 const totalPages = Math.ceil(recordsToRender.length / recordsPerPage);
                 
@@ -2282,6 +2577,8 @@
                     if (!firebaseInitialized) {
                         updateYearFilter();
                         updateStats();
+                        updateTrimestreStats();
+                        updateMonthlyStats();
                         renderTable();
                     }
                     
@@ -2440,6 +2737,7 @@
             function filterRecords() {
                 const searchText = searchInput.value.trim();
                 const selectedYear = yearFilter.value;
+                const selectedMonth = monthFilter.value;
                 
                 // Determinar si la búsqueda es solo números (para búsqueda exacta en columna N°)
                 const isNumberOnly = /^\d+$/.test(searchText);
@@ -2448,8 +2746,15 @@
                     // Filtro por año
                     const yearMatch = selectedYear === 'todos' || record.year.toString() === selectedYear;
                     
+                    // Filtro por mes
+                    let monthMatch = selectedMonth === 'todos';
+                    if (selectedMonth !== 'todos') {
+                        const month = getMonthFromDate(record.remissionDate);
+                        monthMatch = month.toString() === selectedMonth;
+                    }
+                    
                     if (!searchText) {
-                        return yearMatch;
+                        return yearMatch && monthMatch;
                     }
                     
                     const searchLower = searchText.toLowerCase();
@@ -2458,7 +2763,7 @@
                     // 1. Si es solo números, busca coincidencia exacta en la columna N°
                     if (isNumberOnly) {
                         const numberMatch = record.number.toString() === searchText;
-                        if (numberMatch) return yearMatch && true;
+                        if (numberMatch) return yearMatch && monthMatch && true;
                     }
                     
                     // 2. Busca en TODOS los campos (incluyendo los ocultos) de manera parcial
@@ -2477,17 +2782,19 @@
                         // También buscar en el número como texto parcial (si no es búsqueda exacta)
                         (!isNumberOnly && record.number.toString().toLowerCase().includes(searchLower));
                     
-                    return yearMatch && textMatch;
+                    return yearMatch && monthMatch && textMatch;
                 });
                 
                 currentPage = 1;
+                updateTrimestreStats();
+                updateMonthlyStats();
                 renderTable();
             }
             
             // Ver todos los registros en el modal de contenido
             function viewAllRecords() {
                 if (records.length === 0) {
-                    alert('No hay registros para mostrar.');
+                    showNotification('No hay registros para mostrar.', 'error');
                     return;
                 }
 
